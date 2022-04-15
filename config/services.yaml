@@ -10,11 +10,11 @@ parameters:
     TWITTER_ACCESS_TOKEN_SECRET: '%env(TWITTER_ACCESS_TOKEN_SECRET)%'
     TWITTER_USER_ID: '%env(TWITTER_USER_ID)%'
     OPENSEA_API_KEY: '%env(OPENSEA_API_KEY)%'
-    J48BAFORMS_IMAGE_URL: '%env(J48BAFORMS_IMAGE_URL)%'
+    GOBLINIS_IMAGE_URL: '%env(GOBLINIS_IMAGE_URL)%'
     OPENSEA_ASSETS_URL: 'https://opensea.io/assets'
-    J48BAFORMS_IMAGE_FOLDER: 'j48baforms-pictures'
-    J48BAFORMS_IMAGE_EXTENSION: 'png'
-    J48BAFORMS_CONTRACT_ADRESS: '0xc78337ccbb2d08492ec152e501491d3a76cd5172'
+    GOBLINIS_IMAGE_FOLDER: 'goblinis-pictures'
+    GOBLINIS_IMAGE_EXTENSION: 'png'
+    GOBLINIS_CONTRACT_ADRESS: '0xe091f84499eeebda6f76638dca218541d63d8a67'
 
 services:
     # default configuration for services in *this* file

@@ -70,4 +70,31 @@ class TwitterApiService
             throw new \ErrorException("Impossible to upload image on Twitter");
         }
     }
+
+    /**
+     * Return the DateTime of the last tweet of the account
+     *
+     * @return \DateTime|null
+     * @throws \Exception
+     */
+    public function getLastTweetDateTime(): ?\DateTime
+    {
+        $consumerKey = $this->getParams->get('TWITTER_CONSUMER_KEY');
+        $consumerSecret = $this->getParams->get('TWITTER_CONSUMER_SECRET');
+        $accesToken = $this->getParams->get('TWITTER_ACCESS_TOKEN');
+        $accesTokenSecret = $this->getParams->get('TWITTER_ACCESS_TOKEN_SECRET');
+        $connection = new TwitterOAuth($consumerKey, $consumerSecret, $accesToken, $accesTokenSecret);
+        $userId = $this->getParams->get('TWITTER_USER_ID');
+
+        $result = $connection->get("statuses/user_timeline", [
+            "user_id" => $userId,
+            "count" => 1,
+        ]);
+
+        if ($connection->getLastHttpCode() == 200) {
+            return new \DateTime($result[0]->created_at);
+        } else {
+            return null;
+        }
+    }
 }

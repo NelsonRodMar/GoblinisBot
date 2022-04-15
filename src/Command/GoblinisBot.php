@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-class J48baformsBot extends Command
+class GoblinisBot extends Command
 
 {
     private $openseaApi;
@@ -24,7 +24,7 @@ class J48baformsBot extends Command
     protected static $defaultName = 'bot:post';
 
     /**
-     * J48baformsBot constructor.
+     * GoblinisBot constructor.
      *
      * @param TwitterApiService $twitterApi
      * @param OpenSeaApiService $openSeaApi
@@ -45,15 +45,16 @@ class J48baformsBot extends Command
         $cache = new FilesystemAdapter();
         $beginScript = new \DateTime();
         $lastUpdateDateTime = $cache->getItem('date_time');
-        // If no DateTime update in cache set new DateTime
+        // If no DateTime update in cache set by last Tweet
         if (!$lastUpdateDateTime->isHit()) {
-            $actualDateTime = new \DateTime();
-            $lastUpdateDateTime->set($actualDateTime);
+            $lastTweetTime = $this->twitterApi->getLastTweetDateTime();
+            $lastUpdateDateTime->set($lastTweetTime);
             $cache->save($lastUpdateDateTime);
+        }else{
+            $lastTweetTime = $this->twitterApi->getLastTweetDateTime();
         }
         $io = new SymfonyStyle($input, $output);
-        $this->sales($io, $lastUpdateDateTime->get());
-
+        $this->sales($io, $lastUpdateDateTime);
         // Update DateTime last execution
         $lastUpdateDateTime->set($beginScript);
         $cache->save($lastUpdateDateTime);
@@ -77,14 +78,14 @@ class J48baformsBot extends Command
      */
     private function sales(SymfonyStyle $io, \DateTime $lastUpdateDateTime){
         try {
-            $allSales = $this->openseaApi->getListLastSalesAfter($lastUpdateDateTime, 'j48baforms');
-            $contract = $this->getParams->get('J48BAFORMS_CONTRACT_ADRESS');
+            $allSales = $this->openseaApi->getListLastSalesAfter($lastUpdateDateTime, 'goblinis');
+            $contract = $this->getParams->get('GOBLINIS_CONTRACT_ADRESS');
             $openseaAssetsUrl = $this->getParams->get('OPENSEA_ASSETS_URL');
             $io->info('--- Start tweet new sales (' . $lastUpdateDateTime->format('c') . ') ---');
             foreach ($allSales as $sale) {
                 $tokenId = $sale["asset"]["token_id"];
                 try {
-                    $j48baforms = $this->openseaApi->getAllDataNFT($contract, $tokenId);
+                    $goblinis = $this->openseaApi->getAllDataNFT($contract, $tokenId);
                 } catch (\ErrorException $e) {
                     $io->error($e->getMessage());
                 }
@@ -97,7 +98,7 @@ class J48baformsBot extends Command
                 }
                 if ($twitterMediaId !== null) {
                     $subType = $type = null;
-                    foreach ($j48baforms["traits"] as $trait) {
+                    foreach ($goblinis["traits"] as $trait) {
                         if ($trait["trait_type"] == "JABBA TYPE") { //to retrieve type
                             $type = $trait["value"];
                         }
@@ -105,7 +106,7 @@ class J48baformsBot extends Command
                             $subType = $trait["value"];
                         }
                     }
-                    $textContent = 'J48BAFORMS #' . $tokenId . ' a ' . $subType . ' ' . $type . ' form bought for';
+                    $textContent = 'Goblinis #' . $tokenId . ' a ' . $subType . ' ' . $type . ' form';
                     $numberOfTokenSale = $sale["total_price"] / pow(10, $sale["payment_token"]["decimals"]);
                     $sellerAdresse = $sale["seller"]["user"]["username"] !== null ? $sale["seller"]["user"]["username"] : substr($sale["seller"]["address"], 0, 8);
                     $buyerAdresse = $sale["winner_account"]["user"]["username"] !== null ? $sale["winner_account"]["user"]["username"] : substr($sale["winner_account"]["address"], 0, 8);
@@ -114,7 +115,7 @@ class J48baformsBot extends Command
 
                     try {
                         $this->twitterApi->newTweet($textContent, $twitterMediaId);
-                        $io->info('[INFO] New tweet for J48baforms #' . $tokenId);
+                        $io->info('[INFO] New tweet for Goblinis #' . $tokenId);
                     } catch (\ErrorException $e) {
                         $io->error($e->getMessage());
                     }
