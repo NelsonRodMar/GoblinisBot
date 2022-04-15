@@ -42,21 +42,10 @@ class J48baformsBot extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $cache = new FilesystemAdapter();
-        $beginScript = new \DateTime();
-        $lastUpdateDateTime = $cache->getItem('date_time');
-        // If no DateTime update in cache set new DateTime
-        if (!$lastUpdateDateTime->isHit()) {
-            $actualDateTime = new \DateTime();
-            $lastUpdateDateTime->set($actualDateTime);
-            $cache->save($lastUpdateDateTime);
-        }
+        $lastTweetTime = $this->twitterApi->getLastTweetDateTime();
+        $lastUpdateDateTime = $lastTweetTime !== null ? $lastTweetTime : new \DateTime("10 minutes ago");
         $io = new SymfonyStyle($input, $output);
-        $this->sales($io, $lastUpdateDateTime->get());
-
-        // Update DateTime last execution
-        $lastUpdateDateTime->set($beginScript);
-        $cache->save($lastUpdateDateTime);
+        $this->sales($io, $lastUpdateDateTime);
         return Command::SUCCESS;
     }
 
@@ -105,7 +94,7 @@ class J48baformsBot extends Command
                             $subType = $trait["value"];
                         }
                     }
-                    $textContent = 'J48BAFORMS #' . $tokenId . ' a ' . $subType . ' ' . $type . ' form bought for';
+                    $textContent = 'J48BAFORMS #' . $tokenId . ' a ' . $subType . ' ' . $type . ' form';
                     $numberOfTokenSale = $sale["total_price"] / pow(10, $sale["payment_token"]["decimals"]);
                     $sellerAdresse = $sale["seller"]["user"]["username"] !== null ? $sale["seller"]["user"]["username"] : substr($sale["seller"]["address"], 0, 8);
                     $buyerAdresse = $sale["winner_account"]["user"]["username"] !== null ? $sale["winner_account"]["user"]["username"] : substr($sale["winner_account"]["address"], 0, 8);
